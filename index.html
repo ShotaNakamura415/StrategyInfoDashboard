@@ -165,16 +165,16 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: ['前年12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'],
         totalRevenue: [1100000, 1200000, 1250000, 1300000, 1280000, 1350000, 1400000, 1420000, 1380000, 1500000, 1600000, 1550000],
         variableBreakdown: {
-            '製品A': [200000, 220000, 230000, 250000, 240000, 260000, 270000, 280000, 260000, 300000, 320000, 310000],
-            '製品B': [300000, 310000, 320000, 330000, 325000, 340000, 350000, 355000, 345000, 370000, 390000, 380000],
-            'サービスC': [100000, 110000, 115000, 120000, 118000, 125000, 130000, 132000, 128000, 140000, 150000, 145000]
+            '寄附金': [200000, 220000, 230000, 250000, 240000, 260000, 270000, 280000, 260000, 300000, 320000, 310000],
+            '受託研究等収入': [300000, 310000, 320000, 330000, 325000, 340000, 350000, 355000, 345000, 370000, 390000, 380000],
+            'その他': [100000, 110000, 115000, 120000, 118000, 125000, 130000, 132000, 128000, 140000, 150000, 145000]
         },
         grants: [400000, 450000, 470000, 480000, 475000, 500000, 520000, 525000, 515000, 550000, 590000, 570000],
         fixed: [100000, 110000, 115000, 120000, 122000, 125000, 130000, 128000, 132000, 140000, 150000, 145000]
     };
     
     monthlyData.variableRevenue = monthlyData.labels.map((_, i) => 
-        monthlyData.variableBreakdown['製品A'][i] + monthlyData.variableBreakdown['製品B'][i] + monthlyData.variableBreakdown['サービスC'][i]
+        monthlyData.variableBreakdown['寄附金'][i] + monthlyData.variableBreakdown['受託研究等収入'][i] + monthlyData.variableBreakdown['その他'][i]
     );
 
     const yearlyData = {
@@ -296,12 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(document.getElementById('monthlyVariableRevenueBreakdown'), {
             type: 'pie',
             data: {
-                labels: ['製品A', '製品B', 'サービスC'],
+                labels: ['寄附金', '受託研究等収入', 'その他'],
                 datasets: [{
                     data: [
-                        monthlyData.variableBreakdown['製品A'][monthlyData.variableBreakdown['製品A'].length - 1],
-                        monthlyData.variableBreakdown['製品B'][monthlyData.variableBreakdown['製品B'].length - 1],
-                        monthlyData.variableBreakdown['サービスC'][monthlyData.variableBreakdown['サービスC'].length - 1]
+                        monthlyData.variableBreakdown['寄附金'][monthlyData.variableBreakdown['寄附金'].length - 1],
+                        monthlyData.variableBreakdown['受託研究等収入'][monthlyData.variableBreakdown['受託研究等収入'].length - 1],
+                        monthlyData.variableBreakdown['その他'][monthlyData.variableBreakdown['その他'].length - 1]
                     ],
                     backgroundColor: ['#4f46e5', '#38bdf8', '#a5b4fc'],
                     hoverOffset: 4
@@ -316,24 +316,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: monthlyData.labels,
                 datasets: [
                     {
-                        label: '製品A',
-                        data: monthlyData.variableBreakdown['製品A'],
+                        label: '寄附金',
+                        data: monthlyData.variableBreakdown['寄附金'],
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.2)',
                         fill: true,
                         tension: 0.3
                     },
                     {
-                        label: '製品B',
-                        data: monthlyData.variableBreakdown['製品B'],
+                        label: '受託研究等収入',
+                        data: monthlyData.variableBreakdown['受託研究等収入'],
                         borderColor: '#38bdf8',
                         backgroundColor: 'rgba(56, 189, 248, 0.2)',
                         fill: true,
                         tension: 0.3
                     },
                     {
-                        label: 'サービスC',
-                        data: monthlyData.variableBreakdown['サービスC'],
+                        label: 'その他',
+                        data: monthlyData.variableBreakdown['その他'],
                         borderColor: '#a5b4fc',
                         backgroundColor: 'rgba(165, 180, 252, 0.2)',
                         fill: true,
