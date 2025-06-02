@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,33 +20,42 @@
             height: 300px;
             max-height: 400px;
         }
+
         @media (min-width: 768px) {
             .chart-container {
                 height: 350px;
             }
         }
+
         .tab-active {
             border-bottom: 2px solid #4f46e5;
             color: #4f46e5;
             font-weight: 600;
         }
+
         .tab-inactive {
             color: #6b7280;
         }
     </style>
 </head>
+
 <body class="bg-slate-50 font-sans">
     <div class="container mx-auto p-4 md:p-6 lg:p-8">
-        
+
         <header class="mb-6">
             <h1 class="text-3xl font-bold text-slate-800">収入概要シート（Gemini生成イメージ）</h1>
             <p class="text-slate-600 mt-1">月次および年次の主要な財務指標をインタラクティブに分析します。</p>
         </header>
 
+        <br>
+        <p><b></strong><a class="link-opacity-100" href="kifu.html">寄附シート（Gemini生成イメージ）はこちら</a></strong></p>
+        <br>
+
         <div class="mb-6 border-b border-slate-200">
             <nav class="flex space-x-4">
                 <button id="tab-monthly" class="py-2 px-4 text-sm font-medium focus:outline-none tab-active">月次</button>
-                <button id="tab-yearly" class="py-2 px-4 text-sm font-medium focus:outline-none tab-inactive">年次</button>
+                <button id="tab-yearly"
+                    class="py-2 px-4 text-sm font-medium focus:outline-none tab-inactive">年次</button>
             </nav>
         </div>
 
@@ -76,9 +86,10 @@
                             <div id="monthly-variable-revenue-previous" class="bg-white p-4 rounded-lg shadow"></div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                             <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
+                            <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
                                 <h3 class="font-bold text-slate-700 mb-2">変動収入の内訳 (前月)</h3>
-                                <div class="chart-container"><canvas id="monthlyVariableRevenueBreakdown"></canvas></div>
+                                <div class="chart-container"><canvas id="monthlyVariableRevenueBreakdown"></canvas>
+                                </div>
                             </div>
                             <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
                                 <h3 class="font-bold text-slate-700 mb-2">変動収入の内訳月次推移</h3>
@@ -90,7 +101,7 @@
             </div>
 
             <div id="yearly-view" class="hidden">
-                 <div class="grid grid-cols-1 gap-8">
+                <div class="grid grid-cols-1 gap-8">
                     <section>
                         <h2 class="text-2xl font-semibold text-slate-700 mb-4">収入合計</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -102,7 +113,7 @@
                             <div class="chart-container"><canvas id="yearlyTotalRevenueTrend"></canvas></div>
                         </div>
                     </section>
-                     <section>
+                    <section>
                         <h2 class="text-2xl font-semibold text-slate-700 mb-4">変動収入</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                             <div id="yearly-variable-revenue-current" class="bg-white p-4 rounded-lg shadow"></div>
@@ -113,14 +124,14 @@
                             <div class="chart-container"><canvas id="yearlyVariableRevenueTrend"></canvas></div>
                         </div>
                     </section>
-                     <section>
+                    <section>
                         <h2 class="text-2xl font-semibold text-slate-700 mb-4">交付金</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                             <div id="yearly-grant-revenue-current" class="bg-white p-4 rounded-lg shadow"></div>
                             <div id="yearly-grant-revenue-previous" class="bg-white p-4 rounded-lg shadow"></div>
                         </div>
                         <div class="bg-white p-4 rounded-lg shadow">
-                           <h3 class="font-bold text-slate-700 mb-2">年次推移・収入全体に占める割合 (交付金)</h3>
+                            <h3 class="font-bold text-slate-700 mb-2">年次推移・収入全体に占める割合 (交付金)</h3>
                             <div class="chart-container"><canvas id="yearlyGrantRevenueTrend"></canvas></div>
                         </div>
                     </section>
@@ -129,21 +140,21 @@
         </main>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const formatCurrency = (value) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(value);
-    const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formatCurrency = (value) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(value);
+            const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
 
-    const createStatCard = (containerId, title, value, comparisonValue, comparisonLabel) => {
-        const container = document.getElementById(containerId);
-        const diff = value - comparisonValue;
-        const diffPercent = comparisonValue !== 0 ? (diff / comparisonValue) : 0;
-        const isPositive = diff >= 0;
-        
-        const arrow = isPositive ? '↑' : '↓';
-        const colorClass = isPositive ? 'text-green-600' : 'text-red-600';
+            const createStatCard = (containerId, title, value, comparisonValue, comparisonLabel) => {
+                const container = document.getElementById(containerId);
+                const diff = value - comparisonValue;
+                const diffPercent = comparisonValue !== 0 ? (diff / comparisonValue) : 0;
+                const isPositive = diff >= 0;
 
-        container.innerHTML = `
+                const arrow = isPositive ? '↑' : '↓';
+                const colorClass = isPositive ? 'text-green-600' : 'text-red-600';
+
+                container.innerHTML = `
             <h3 class="text-sm font-medium text-slate-500">${title}</h3>
             <p class="text-3xl font-bold text-slate-800 mt-1">${formatCurrency(value)}</p>
             <div class="text-sm mt-2 flex items-center ${colorClass}">
@@ -151,343 +162,360 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${formatCurrency(Math.abs(diff))} (${formatPercent(Math.abs(diffPercent))}) ${comparisonLabel}</span>
             </div>
         `;
-    };
+            };
 
-    const createSingleStatCard = (containerId, title, value) => {
-         const container = document.getElementById(containerId);
-         container.innerHTML = `
+            const createSingleStatCard = (containerId, title, value) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
             <h3 class="text-sm font-medium text-slate-500">${title}</h3>
             <p class="text-3xl font-bold text-slate-800 mt-2">${formatCurrency(value)}</p>
         `;
-    }
-
-    const monthlyData = {
-        labels: ['前年12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'],
-        totalRevenue: [1100000, 1200000, 1250000, 1300000, 1280000, 1350000, 1400000, 1420000, 1380000, 1500000, 1600000, 1550000],
-        variableBreakdown: {
-            '寄附金': [200000, 220000, 230000, 250000, 240000, 260000, 270000, 280000, 260000, 300000, 320000, 310000],
-            '受託研究等収入': [300000, 310000, 320000, 330000, 325000, 340000, 350000, 355000, 345000, 370000, 390000, 380000],
-            'その他': [100000, 110000, 115000, 120000, 118000, 125000, 130000, 132000, 128000, 140000, 150000, 145000]
-        },
-        grants: [400000, 450000, 470000, 480000, 475000, 500000, 520000, 525000, 515000, 550000, 590000, 570000],
-        fixed: [100000, 110000, 115000, 120000, 122000, 125000, 130000, 128000, 132000, 140000, 150000, 145000]
-    };
-    
-    monthlyData.variableRevenue = monthlyData.labels.map((_, i) => 
-        monthlyData.variableBreakdown['寄附金'][i] + monthlyData.variableBreakdown['受託研究等収入'][i] + monthlyData.variableBreakdown['その他'][i]
-    );
-
-    const yearlyData = {
-        labels: ['3年前', '2年前', '前年'],
-        totalRevenue: [15000000, 16500000, 18000000],
-        variableRevenue: [8000000, 9500000, 11000000],
-        grants: [5000000, 4500000, 4000000]
-    };
-    
-    const chartDefaultOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                 labels: {
-                    padding: 20,
-                    font: { size: 12 }
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.parsed.y !== null) {
-                           if (context.chart.config.type === 'pie' || context.chart.config.type === 'doughnut'){
-                                label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed);
-                           } else {
-                                label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed.y);
-                           }
-                        }
-                        return label;
-                    }
-                }
             }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value, index, values) {
-                        return (value / 1000000) + 'M';
-                    }
-                }
-            },
-            x: {
-                grid: {
-                    display: false,
-                }
-            }
-        },
-    };
 
-    const renderMonthlyView = () => {
-        const lastMonthTotal = monthlyData.totalRevenue[monthlyData.totalRevenue.length - 1];
-        const prevMonthTotal = monthlyData.totalRevenue[monthlyData.totalRevenue.length - 2];
-        createSingleStatCard('monthly-total-revenue-current', '収入合計 (前月)', lastMonthTotal);
-        createStatCard('monthly-total-revenue-previous', '収入合計 (前々月)', prevMonthTotal, monthlyData.totalRevenue[monthlyData.totalRevenue.length - 3], '前々月比');
-        
-        const lastMonthVariable = monthlyData.variableRevenue[monthlyData.variableRevenue.length - 1];
-        const prevMonthVariable = monthlyData.variableRevenue[monthlyData.variableRevenue.length - 2];
-        createSingleStatCard('monthly-variable-revenue-current', '変動収入 (前月)', lastMonthVariable);
-        createStatCard('monthly-variable-revenue-previous', '変動収入 (前々月)', prevMonthVariable, monthlyData.variableRevenue[monthlyData.variableRevenue.length - 3], '前々月比');
-
-        new Chart(document.getElementById('monthlyTotalRevenueBreakdown'), {
-            type: 'pie',
-            data: {
-                labels: ['変動収入', '交付金', '固定収入'],
-                datasets: [{
-                    data: [
-                        lastMonthVariable,
-                        monthlyData.grants[monthlyData.grants.length - 1],
-                        monthlyData.fixed[monthlyData.fixed.length - 1]
-                    ],
-                    backgroundColor: ['#4f46e5', '#38bdf8', '#a5b4fc'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {}}
-        });
-
-        const cumulativeTotalRevenue = monthlyData.totalRevenue.reduce((acc, val, i) => {
-            acc.push((acc[i-1] || 0) + val);
-            return acc;
-        }, []);
-        new Chart(document.getElementById('monthlyTotalRevenueTrend'), {
-            type: 'bar',
-            data: {
-                labels: monthlyData.labels,
-                datasets: [{
-                    label: '月次収入',
-                    data: monthlyData.totalRevenue,
-                    backgroundColor: '#a5b4fc',
-                    yAxisID: 'y',
-                }, {
-                    label: '累積収入',
-                    data: cumulativeTotalRevenue,
-                    borderColor: '#4f46e5',
-                    backgroundColor: '#4f46e5',
-                    type: 'line',
-                    tension: 0.1,
-                    yAxisID: 'y1',
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {
-                y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '月次(円)'},
-                    ticks: { callback: (value) => (value / 1000000) + 'M' }
+            const monthlyData = {
+                labels: ['前年12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'],
+                totalRevenue: [1100000, 1200000, 1250000, 1300000, 1280000, 1350000, 1400000, 1420000, 1380000, 1500000, 1600000, 1550000],
+                variableBreakdown: {
+                    '寄附金': [200000, 220000, 230000, 250000, 240000, 260000, 270000, 280000, 260000, 300000, 320000, 310000],
+                    '受託研究等収入': [300000, 310000, 320000, 330000, 325000, 340000, 350000, 355000, 345000, 370000, 390000, 380000],
+                    'その他': [100000, 110000, 115000, 120000, 118000, 125000, 130000, 132000, 128000, 140000, 150000, 145000]
                 },
-                y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '累積(円)'},
-                    grid: { drawOnChartArea: false },
-                    ticks: { callback: (value) => (value / 1000000) + 'M' }
-                }
-            }}
-        });
-        
-        new Chart(document.getElementById('monthlyVariableRevenueBreakdown'), {
-            type: 'pie',
-            data: {
-                labels: ['寄附金', '受託研究等収入', 'その他'],
-                datasets: [{
-                    data: [
-                        monthlyData.variableBreakdown['寄附金'][monthlyData.variableBreakdown['寄附金'].length - 1],
-                        monthlyData.variableBreakdown['受託研究等収入'][monthlyData.variableBreakdown['受託研究等収入'].length - 1],
-                        monthlyData.variableBreakdown['その他'][monthlyData.variableBreakdown['その他'].length - 1]
-                    ],
-                    backgroundColor: ['#4f46e5', '#38bdf8', '#a5b4fc'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {}}
-        });
+                grants: [400000, 450000, 470000, 480000, 475000, 500000, 520000, 525000, 515000, 550000, 590000, 570000],
+                fixed: [100000, 110000, 115000, 120000, 122000, 125000, 130000, 128000, 132000, 140000, 150000, 145000]
+            };
 
-        new Chart(document.getElementById('monthlyVariableRevenueTrend'), {
-            type: 'line',
-            data: {
-                labels: monthlyData.labels,
-                datasets: [
-                    {
-                        label: '寄附金',
-                        data: monthlyData.variableBreakdown['寄附金'],
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                        fill: true,
-                        tension: 0.3
+            monthlyData.variableRevenue = monthlyData.labels.map((_, i) =>
+                monthlyData.variableBreakdown['寄附金'][i] + monthlyData.variableBreakdown['受託研究等収入'][i] + monthlyData.variableBreakdown['その他'][i]
+            );
+
+            const yearlyData = {
+                labels: ['3年前', '2年前', '前年'],
+                totalRevenue: [15000000, 16500000, 18000000],
+                variableRevenue: [8000000, 9500000, 11000000],
+                grants: [5000000, 4500000, 4000000]
+            };
+
+            const chartDefaultOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 }
+                        }
                     },
-                    {
-                        label: '受託研究等収入',
-                        data: monthlyData.variableBreakdown['受託研究等収入'],
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                        fill: true,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'その他',
-                        data: monthlyData.variableBreakdown['その他'],
-                        borderColor: '#a5b4fc',
-                        backgroundColor: 'rgba(165, 180, 252, 0.2)',
-                        fill: true,
-                        tension: 0.3
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    if (context.chart.config.type === 'pie' || context.chart.config.type === 'doughnut') {
+                                        label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed);
+                                    } else {
+                                        label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed.y);
+                                    }
+                                }
+                                return label;
+                            }
+                        }
                     }
-                ]
-            },
-            options: {...chartDefaultOptions, interaction: { mode: 'index', intersect: false }, scales: {...chartDefaultOptions.scales, y: {...chartDefaultOptions.scales.y, stacked: true}}}
-        });
-    };
-
-    const renderYearlyView = () => {
-        const lastYearTotal = yearlyData.totalRevenue[yearlyData.totalRevenue.length - 1];
-        const prevYearTotal = yearlyData.totalRevenue[yearlyData.totalRevenue.length - 2];
-        createSingleStatCard('yearly-total-revenue-current', '収入合計 (前年)', lastYearTotal);
-        createStatCard('yearly-total-revenue-previous', '収入合計 (前々年)', prevYearTotal, yearlyData.totalRevenue[yearlyData.totalRevenue.length - 3], '前々年比');
-
-        const lastYearVariable = yearlyData.variableRevenue[yearlyData.variableRevenue.length - 1];
-        const prevYearVariable = yearlyData.variableRevenue[yearlyData.variableRevenue.length - 2];
-        createSingleStatCard('yearly-variable-revenue-current', '変動収入 (前年)', lastYearVariable);
-        createStatCard('yearly-variable-revenue-previous', '変動収入 (前々年)', prevYearVariable, yearlyData.variableRevenue[yearlyData.variableRevenue.length - 3], '前々年比');
-        
-        const lastYearGrant = yearlyData.grants[yearlyData.grants.length - 1];
-        const prevYearGrant = yearlyData.grants[yearlyData.grants.length - 2];
-        createSingleStatCard('yearly-grant-revenue-current', '交付金 (前年)', lastYearGrant);
-        createStatCard('yearly-grant-revenue-previous', '交付金 (前々年)', prevYearGrant, yearlyData.grants[yearlyData.grants.length - 3], '前々年比');
-
-        const yoyGrowthRate = yearlyData.labels.map((_, i) => {
-            if (i === 0) return null;
-            return (yearlyData.totalRevenue[i] - yearlyData.totalRevenue[i-1]) / yearlyData.totalRevenue[i-1];
-        });
-        new Chart(document.getElementById('yearlyTotalRevenueTrend'), {
-            type: 'bar',
-            data: {
-                labels: yearlyData.labels,
-                datasets: [{
-                    label: '年次収入',
-                    data: yearlyData.totalRevenue,
-                    backgroundColor: '#a5b4fc',
-                    yAxisID: 'y',
-                }, {
-                    label: '前年比成長率',
-                    data: yoyGrowthRate,
-                    borderColor: '#4f46e5',
-                    backgroundColor: '#4f46e5',
-                    type: 'line',
-                    tension: 0.1,
-                    yAxisID: 'y1',
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {
-                y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '年次収入(円)'},
-                    ticks: { callback: (value) => (value / 1000000) + 'M' }
                 },
-                y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '成長率(%)'},
-                    grid: { drawOnChartArea: false },
-                    ticks: { callback: (value) => formatPercent(value) }
-                }
-            }}
-        });
-        
-        const variableRatio = yearlyData.labels.map((_, i) => yearlyData.variableRevenue[i] / yearlyData.totalRevenue[i]);
-        new Chart(document.getElementById('yearlyVariableRevenueTrend'), {
-            type: 'bar',
-            data: {
-                labels: yearlyData.labels,
-                datasets: [{
-                    label: '変動収入',
-                    data: yearlyData.variableRevenue,
-                    backgroundColor: '#a5b4fc',
-                    yAxisID: 'y',
-                }, {
-                    label: '収入全体に占める割合',
-                    data: variableRatio,
-                    borderColor: '#4f46e5',
-                    backgroundColor: '#4f46e5',
-                    type: 'line',
-                    tension: 0.1,
-                    yAxisID: 'y1',
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {
-                y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '変動収入(円)'},
-                    ticks: { callback: (value) => (value / 1000000) + 'M' }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value, index, values) {
+                                return (value / 1000000) + 'M';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                        }
+                    }
                 },
-                y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '構成比(%)'},
-                    grid: { drawOnChartArea: false },
-                    ticks: { callback: (value) => formatPercent(value) }
-                }
-            }}
-        });
-        
-        const grantRatio = yearlyData.labels.map((_, i) => yearlyData.grants[i] / yearlyData.totalRevenue[i]);
-        new Chart(document.getElementById('yearlyGrantRevenueTrend'), {
-            type: 'bar',
-            data: {
-                labels: yearlyData.labels,
-                datasets: [{
-                    label: '交付金',
-                    data: yearlyData.grants,
-                    backgroundColor: '#a5b4fc',
-                    yAxisID: 'y',
-                }, {
-                    label: '収入全体に占める割合',
-                    data: grantRatio,
-                    borderColor: '#4f46e5',
-                    backgroundColor: '#4f46e5',
+            };
+
+            const renderMonthlyView = () => {
+                const lastMonthTotal = monthlyData.totalRevenue[monthlyData.totalRevenue.length - 1];
+                const prevMonthTotal = monthlyData.totalRevenue[monthlyData.totalRevenue.length - 2];
+                createSingleStatCard('monthly-total-revenue-current', '収入合計 (前月)', lastMonthTotal);
+                createStatCard('monthly-total-revenue-previous', '収入合計 (前々月)', prevMonthTotal, monthlyData.totalRevenue[monthlyData.totalRevenue.length - 3], '前々月比');
+
+                const lastMonthVariable = monthlyData.variableRevenue[monthlyData.variableRevenue.length - 1];
+                const prevMonthVariable = monthlyData.variableRevenue[monthlyData.variableRevenue.length - 2];
+                createSingleStatCard('monthly-variable-revenue-current', '変動収入 (前月)', lastMonthVariable);
+                createStatCard('monthly-variable-revenue-previous', '変動収入 (前々月)', prevMonthVariable, monthlyData.variableRevenue[monthlyData.variableRevenue.length - 3], '前々月比');
+
+                new Chart(document.getElementById('monthlyTotalRevenueBreakdown'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['変動収入', '交付金', '固定収入'],
+                        datasets: [{
+                            data: [
+                                lastMonthVariable,
+                                monthlyData.grants[monthlyData.grants.length - 1],
+                                monthlyData.fixed[monthlyData.fixed.length - 1]
+                            ],
+                            backgroundColor: ['#4f46e5', '#38bdf8', '#a5b4fc'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { ...chartDefaultOptions, scales: {} }
+                });
+
+                const cumulativeTotalRevenue = monthlyData.totalRevenue.reduce((acc, val, i) => {
+                    acc.push((acc[i - 1] || 0) + val);
+                    return acc;
+                }, []);
+                new Chart(document.getElementById('monthlyTotalRevenueTrend'), {
+                    type: 'bar',
+                    data: {
+                        labels: monthlyData.labels,
+                        datasets: [{
+                            label: '月次収入',
+                            data: monthlyData.totalRevenue,
+                            backgroundColor: '#a5b4fc',
+                            yAxisID: 'y',
+                        }, {
+                            label: '累積収入',
+                            data: cumulativeTotalRevenue,
+                            borderColor: '#4f46e5',
+                            backgroundColor: '#4f46e5',
+                            type: 'line',
+                            tension: 0.1,
+                            yAxisID: 'y1',
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions, scales: {
+                            y: {
+                                type: 'linear', display: true, position: 'left', title: { display: true, text: '月次(円)' },
+                                ticks: { callback: (value) => (value / 1000000) + 'M' }
+                            },
+                            y1: {
+                                type: 'linear', display: true, position: 'right', title: { display: true, text: '累積(円)' },
+                                grid: { drawOnChartArea: false },
+                                ticks: { callback: (value) => (value / 1000000) + 'M' }
+                            }
+                        }
+                    }
+                });
+
+                new Chart(document.getElementById('monthlyVariableRevenueBreakdown'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['寄附金', '受託研究等収入', 'その他'],
+                        datasets: [{
+                            data: [
+                                monthlyData.variableBreakdown['寄附金'][monthlyData.variableBreakdown['寄附金'].length - 1],
+                                monthlyData.variableBreakdown['受託研究等収入'][monthlyData.variableBreakdown['受託研究等収入'].length - 1],
+                                monthlyData.variableBreakdown['その他'][monthlyData.variableBreakdown['その他'].length - 1]
+                            ],
+                            backgroundColor: ['#4f46e5', '#38bdf8', '#a5b4fc'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { ...chartDefaultOptions, scales: {} }
+                });
+
+                new Chart(document.getElementById('monthlyVariableRevenueTrend'), {
                     type: 'line',
-                    tension: 0.1,
-                    yAxisID: 'y1',
-                }]
-            },
-            options: {...chartDefaultOptions, scales: {
-                y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '交付金(円)'},
-                    ticks: { callback: (value) => (value / 1000000) + 'M' }
-                },
-                y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '構成比(%)'},
-                    grid: { drawOnChartArea: false },
-                    ticks: { callback: (value) => formatPercent(value) }
+                    data: {
+                        labels: monthlyData.labels,
+                        datasets: [
+                            {
+                                label: '寄附金',
+                                data: monthlyData.variableBreakdown['寄附金'],
+                                borderColor: '#4f46e5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: '受託研究等収入',
+                                data: monthlyData.variableBreakdown['受託研究等収入'],
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'その他',
+                                data: monthlyData.variableBreakdown['その他'],
+                                borderColor: '#a5b4fc',
+                                backgroundColor: 'rgba(165, 180, 252, 0.2)',
+                                fill: true,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: { ...chartDefaultOptions, interaction: { mode: 'index', intersect: false }, scales: { ...chartDefaultOptions.scales, y: { ...chartDefaultOptions.scales.y, stacked: true } } }
+                });
+            };
+
+            const renderYearlyView = () => {
+                const lastYearTotal = yearlyData.totalRevenue[yearlyData.totalRevenue.length - 1];
+                const prevYearTotal = yearlyData.totalRevenue[yearlyData.totalRevenue.length - 2];
+                createSingleStatCard('yearly-total-revenue-current', '収入合計 (前年)', lastYearTotal);
+                createStatCard('yearly-total-revenue-previous', '収入合計 (前々年)', prevYearTotal, yearlyData.totalRevenue[yearlyData.totalRevenue.length - 3], '前々年比');
+
+                const lastYearVariable = yearlyData.variableRevenue[yearlyData.variableRevenue.length - 1];
+                const prevYearVariable = yearlyData.variableRevenue[yearlyData.variableRevenue.length - 2];
+                createSingleStatCard('yearly-variable-revenue-current', '変動収入 (前年)', lastYearVariable);
+                createStatCard('yearly-variable-revenue-previous', '変動収入 (前々年)', prevYearVariable, yearlyData.variableRevenue[yearlyData.variableRevenue.length - 3], '前々年比');
+
+                const lastYearGrant = yearlyData.grants[yearlyData.grants.length - 1];
+                const prevYearGrant = yearlyData.grants[yearlyData.grants.length - 2];
+                createSingleStatCard('yearly-grant-revenue-current', '交付金 (前年)', lastYearGrant);
+                createStatCard('yearly-grant-revenue-previous', '交付金 (前々年)', prevYearGrant, yearlyData.grants[yearlyData.grants.length - 3], '前々年比');
+
+                const yoyGrowthRate = yearlyData.labels.map((_, i) => {
+                    if (i === 0) return null;
+                    return (yearlyData.totalRevenue[i] - yearlyData.totalRevenue[i - 1]) / yearlyData.totalRevenue[i - 1];
+                });
+                new Chart(document.getElementById('yearlyTotalRevenueTrend'), {
+                    type: 'bar',
+                    data: {
+                        labels: yearlyData.labels,
+                        datasets: [{
+                            label: '年次収入',
+                            data: yearlyData.totalRevenue,
+                            backgroundColor: '#a5b4fc',
+                            yAxisID: 'y',
+                        }, {
+                            label: '前年比成長率',
+                            data: yoyGrowthRate,
+                            borderColor: '#4f46e5',
+                            backgroundColor: '#4f46e5',
+                            type: 'line',
+                            tension: 0.1,
+                            yAxisID: 'y1',
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions, scales: {
+                            y: {
+                                type: 'linear', display: true, position: 'left', title: { display: true, text: '年次収入(円)' },
+                                ticks: { callback: (value) => (value / 1000000) + 'M' }
+                            },
+                            y1: {
+                                type: 'linear', display: true, position: 'right', title: { display: true, text: '成長率(%)' },
+                                grid: { drawOnChartArea: false },
+                                ticks: { callback: (value) => formatPercent(value) }
+                            }
+                        }
+                    }
+                });
+
+                const variableRatio = yearlyData.labels.map((_, i) => yearlyData.variableRevenue[i] / yearlyData.totalRevenue[i]);
+                new Chart(document.getElementById('yearlyVariableRevenueTrend'), {
+                    type: 'bar',
+                    data: {
+                        labels: yearlyData.labels,
+                        datasets: [{
+                            label: '変動収入',
+                            data: yearlyData.variableRevenue,
+                            backgroundColor: '#a5b4fc',
+                            yAxisID: 'y',
+                        }, {
+                            label: '収入全体に占める割合',
+                            data: variableRatio,
+                            borderColor: '#4f46e5',
+                            backgroundColor: '#4f46e5',
+                            type: 'line',
+                            tension: 0.1,
+                            yAxisID: 'y1',
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions, scales: {
+                            y: {
+                                type: 'linear', display: true, position: 'left', title: { display: true, text: '変動収入(円)' },
+                                ticks: { callback: (value) => (value / 1000000) + 'M' }
+                            },
+                            y1: {
+                                type: 'linear', display: true, position: 'right', title: { display: true, text: '構成比(%)' },
+                                grid: { drawOnChartArea: false },
+                                ticks: { callback: (value) => formatPercent(value) }
+                            }
+                        }
+                    }
+                });
+
+                const grantRatio = yearlyData.labels.map((_, i) => yearlyData.grants[i] / yearlyData.totalRevenue[i]);
+                new Chart(document.getElementById('yearlyGrantRevenueTrend'), {
+                    type: 'bar',
+                    data: {
+                        labels: yearlyData.labels,
+                        datasets: [{
+                            label: '交付金',
+                            data: yearlyData.grants,
+                            backgroundColor: '#a5b4fc',
+                            yAxisID: 'y',
+                        }, {
+                            label: '収入全体に占める割合',
+                            data: grantRatio,
+                            borderColor: '#4f46e5',
+                            backgroundColor: '#4f46e5',
+                            type: 'line',
+                            tension: 0.1,
+                            yAxisID: 'y1',
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions, scales: {
+                            y: {
+                                type: 'linear', display: true, position: 'left', title: { display: true, text: '交付金(円)' },
+                                ticks: { callback: (value) => (value / 1000000) + 'M' }
+                            },
+                            y1: {
+                                type: 'linear', display: true, position: 'right', title: { display: true, text: '構成比(%)' },
+                                grid: { drawOnChartArea: false },
+                                ticks: { callback: (value) => formatPercent(value) }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const tabMonthly = document.getElementById('tab-monthly');
+            const tabYearly = document.getElementById('tab-yearly');
+            const monthlyView = document.getElementById('monthly-view');
+            const yearlyView = document.getElementById('yearly-view');
+
+            const switchTab = (activeTab) => {
+                if (activeTab === 'monthly') {
+                    monthlyView.classList.remove('hidden');
+                    yearlyView.classList.add('hidden');
+                    tabMonthly.classList.add('tab-active');
+                    tabMonthly.classList.remove('tab-inactive');
+                    tabYearly.classList.add('tab-inactive');
+                    tabYearly.classList.remove('tab-active');
+                } else {
+                    yearlyView.classList.remove('hidden');
+                    monthlyView.classList.add('hidden');
+                    tabYearly.classList.add('tab-active');
+                    tabYearly.classList.remove('tab-inactive');
+                    tabMonthly.classList.add('tab-inactive');
+                    tabMonthly.classList.remove('tab-active');
                 }
-            }}
+            };
+
+            tabMonthly.addEventListener('click', () => switchTab('monthly'));
+            tabYearly.addEventListener('click', () => switchTab('yearly'));
+
+            renderMonthlyView();
+            renderYearlyView();
+            switchTab('monthly');
         });
-    };
-
-    const tabMonthly = document.getElementById('tab-monthly');
-    const tabYearly = document.getElementById('tab-yearly');
-    const monthlyView = document.getElementById('monthly-view');
-    const yearlyView = document.getElementById('yearly-view');
-
-    const switchTab = (activeTab) => {
-        if (activeTab === 'monthly') {
-            monthlyView.classList.remove('hidden');
-            yearlyView.classList.add('hidden');
-            tabMonthly.classList.add('tab-active');
-            tabMonthly.classList.remove('tab-inactive');
-            tabYearly.classList.add('tab-inactive');
-            tabYearly.classList.remove('tab-active');
-        } else {
-            yearlyView.classList.remove('hidden');
-            monthlyView.classList.add('hidden');
-            tabYearly.classList.add('tab-active');
-            tabYearly.classList.remove('tab-inactive');
-            tabMonthly.classList.add('tab-inactive');
-            tabMonthly.classList.remove('tab-active');
-        }
-    };
-    
-    tabMonthly.addEventListener('click', () => switchTab('monthly'));
-    tabYearly.addEventListener('click', () => switchTab('yearly'));
-
-    renderMonthlyView();
-    renderYearlyView();
-    switchTab('monthly');
-});
-</script>
+    </script>
 </body>
+
 </html>
