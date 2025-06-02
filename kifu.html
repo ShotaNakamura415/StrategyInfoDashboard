@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インタラクティブ寄付ダッシュボード</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .sub-nav-button.active {
+            color: #3b82f6; /* blue-500 */
+            border-bottom-width: 2px;
+            border-color: #3b82f6; /* blue-500 */
+        }
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <div id="app" class="container mx-auto p-4 md:p-6">
+
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-slate-800">寄附シート（Gemini生成イメージ）</h1>
+            <p class="text-slate-500 mt-1">組織の寄付活動に関する月次および年次のパフォーマンスを分析します。</p>
+        </header>
+
+        <nav class="flex justify-center mb-6 bg-slate-200 rounded-lg p-1">
+            <button id="monthly-tab" class="nav-button w-1/2 py-2 px-4 rounded-md font-semibold text-slate-600">月次</button>
+            <button id="annual-tab" class="nav-button w-1/2 py-2 px-4 rounded-md font-semibold text-slate-600">年次</button>
+        </nav>
+        
+        <nav id="sub-nav" class="sticky-nav bg-white/80 backdrop-blur-sm border-b border-slate-200 mb-8">
+            <div class="flex justify-center space-x-4 md:space-x-8">
+                <a href="#section-overall" class="sub-nav-button py-3 px-2 font-medium text-slate-500 hover:text-blue-500 transition-colors">全体</a>
+                <a href="#section-department" class="sub-nav-button py-3 px-2 font-medium text-slate-500 hover:text-blue-500 transition-colors">部局ごと</a>
+                <a href="#section-region" class="sub-nav-button py-3 px-2 font-medium text-slate-500 hover:text-blue-500 transition-colors">地域ごと</a>
+                <a href="#section-project" class="sub-nav-button py-3 px-2 font-medium text-slate-500 hover:text-blue-500 transition-colors">プロジェクトごと</a>
+            </div>
+        </nav>
+
+        <main id="dashboard-content">
+        </main>
+
+    </div>
+
+    <script>
+        const MOCK_DATA = {
+            monthly: {
+                overall: {
+                    lastMonthAmount: 12580000,
+                    prevMonthAmount: 11230000,
+                    trends: {
+                        labels: ['5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月', '4月'],
+                        monthly: [8.5, 9.1, 10.2, 9.8, 11.5, 11.2, 12.1, 13.0, 11.8, 11.2, 12.2, 12.58],
+                        cumulative: [8.5, 17.6, 27.8, 37.6, 49.1, 60.3, 72.4, 85.4, 97.2, 108.4, 120.6, 133.18]
+                    }
+                },
+                department: {
+                    breakdown: { labels: ['理学研究科', '工学研究科', '医学研究科', '文学研究科', '法学研究科', 'その他'], data: [35, 25, 20, 10, 5, 5] },
+                    trends: {
+                        labels: ['11月', '12月', '1月', '2月', '3月', '4月'],
+                        datasets: [
+                            { label: '理学研究科', data: [3.2, 3.4, 3.1, 3.3, 3.4, 3.5] },
+                            { label: '工学研究科', data: [2.1, 2.3, 2.0, 2.2, 2.4, 2.5] },
+                            { label: '医学研究科', data: [1.8, 2.1, 1.9, 2.0, 2.1, 2.0] },
+                            { label: '文学研究科', data: [1.0, 1.1, 1.0, 1.1, 1.2, 1.0] },
+                            { label: '法学研究科', data: [0.5, 0.6, 0.5, 0.5, 0.6, 0.5] },
+                            { label: 'その他', data: [0.5, 0.6, 0.5, 0.4, 0.5, 0.5] },
+                        ]
+                    },
+                    ranking: {
+                        labels: ['理学研究科', '工学研究科', '医学研究科', '文学研究科', '法学研究科'],
+                        datasets: [
+                            { label: 'プロジェクトA', data: [15, 8, 5, 2, 1] },
+                            { label: 'プロジェクトB', data: [10, 12, 6, 4, 2] },
+                            { label: 'プロジェクトC', data: [5, 3, 7, 3, 1] },
+                            { label: 'その他', data: [5, 2, 2, 1, 1] },
+                        ]
+                    }
+                },
+                region: {
+                    breakdown: { labels: ['関東', '近畿', '中部', '九州', '海外', 'その他'], data: [40, 25, 15, 8, 7, 5] },
+                    trends: {
+                        labels: ['11月', '12月', '1月', '2月', '3月', '4月'],
+                        datasets: [
+                            { label: '関東', data: [4.2, 4.4, 4.1, 4.3, 4.4, 4.5] },
+                            { label: '近畿', data: [2.5, 2.7, 2.4, 2.6, 2.8, 2.9] },
+                            { label: '中部', data: [1.5, 1.6, 1.5, 1.5, 1.6, 1.5] },
+                            { label: 'その他', data: [1.0, 1.1, 1.0, 1.1, 1.2, 1.0] }
+                        ]
+                    },
+                     ranking: {
+                        labels: ['関東', '近畿', '中部', '九州', '海外'],
+                        datasets: [
+                            { label: 'プロジェクトX', data: [18, 10, 5, 2, 3] },
+                            { label: 'プロジェクトY', data: [12, 11, 6, 4, 2] },
+                            { label: 'プロジェクトZ', data: [8, 2, 3, 1, 1] },
+                            { label: 'その他', data: [2, 2, 1, 1, 1] },
+                        ]
+                    }
+                },
+                project: {
+                    breakdown: { labels: ['先端研究A', '人材育成B', '施設拡充C', '文化振興D', '国際交流E', 'その他'], data: [30, 25, 20, 15, 5, 5] },
+                    trends: {
+                        labels: ['11月', '12月', '1月', '2月', '3月', '4月'],
+                        datasets: [
+                           { label: '先端研究A', data: [3.0, 3.2, 2.9, 3.1, 3.3, 3.0] },
+                           { label: '人材育成B', data: [2.5, 2.6, 2.4, 2.5, 2.7, 2.5] },
+                           { label: '施設拡充C', data: [2.0, 2.1, 2.0, 2.1, 2.2, 2.0] },
+                           { label: 'その他', data: [1.5, 1.7, 1.6, 1.6, 1.8, 1.5] },
+                        ]
+                    },
+                    ranking: {
+                        labels: ['先端研究A', '人材育成B', '施設拡充C', '文化振興D', '国際交流E'],
+                        data: [45, 38, 32, 25, 15]
+                    }
+                }
+            },
+            annual: {
+                overall: {
+                    lastMonthAmount: 133180000,
+                    prevMonthAmount: 115500000,
+                    trends: {
+                        labels: ['2020年度', '2021年度', '2022年度', '2023年度', '2024年度'],
+                        monthly: [95, 105, 110, 115.5, 133.18],
+                        growth: [null, 10.5, 4.8, 5.0, 15.3]
+                    }
+                },
+                department: {
+                    breakdown: { labels: ['理学研究科', '工学研究科', '医学研究科', '文学研究科', '法学研究科', 'その他'], data: [33, 26, 21, 11, 5, 4] },
+                    trends: {
+                        labels: ['2021', '2022', '2023', '2024'],
+                        datasets: [
+                            { label: '理学研究科', data: [30, 31, 32, 33] },
+                            { label: '工学研究科', data: [24, 25, 25, 26] },
+                            { label: '医学研究科', data: [20, 20, 21, 21] },
+                            { label: 'その他', data: [10, 11, 12, 13] },
+                        ]
+                    },
+                    ranking: {
+                        labels: ['理学研究科', '工学研究科', '医学研究科', '文学研究科', '法学研究科'],
+                        datasets: [
+                            { label: 'プロジェクトA', data: [150, 80, 50, 20, 10] },
+                            { label: 'プロジェクトB', data: [100, 120, 60, 40, 20] },
+                            { label: 'プロジェクトC', data: [50, 30, 70, 30, 10] },
+                            { label: 'その他', data: [30, 30, 30, 20, 5] },
+                        ]
+                    }
+                },
+                region: {
+                    breakdown: { labels: ['関東', '近畿', '中部', '九州', '海外', 'その他'], data: [42, 24, 14, 9, 6, 5] },
+                    trends: {
+                        labels: ['2021', '2022', '2023', '2024'],
+                        datasets: [
+                            { label: '関東', data: [40, 41, 41, 42] },
+                            { label: '近畿', data: [22, 23, 23, 24] },
+                            { label: '中部', data: [13, 13, 14, 14] },
+                            { label: 'その他', data: [10, 10, 11, 12] },
+                        ]
+                    },
+                    ranking: {
+                        labels: ['関東', '近畿', '中部', '九州', '海外'],
+                        datasets: [
+                            { label: 'プロジェクトX', data: [180, 100, 50, 20, 30] },
+                            { label: 'プロジェクトY', data: [120, 110, 60, 40, 20] },
+                            { label: 'プロジェクトZ', data: [80, 20, 30, 10, 10] },
+                            { label: 'その他', data: [40, 10, 4, 10, 0] },
+                        ]
+                    }
+                },
+                project: {
+                    breakdown: { labels: ['先端研究A', '人材育成B', '施設拡充C', '文化振興D', '国際交流E', 'その他'], data: [32, 26, 19, 14, 5, 4] },
+                    trends: {
+                        labels: ['2021', '2022', '2023', '2024'],
+                        datasets: [
+                            { label: '先端研究A', data: [30, 31, 31, 32] },
+                            { label: '人材育成B', data: [25, 25, 26, 26] },
+                            { label: '施設拡充C', data: [18, 19, 19, 19] },
+                            { label: 'その他', data: [12, 12, 13, 14] },
+                        ]
+                    },
+                    ranking: {
+                        labels: ['先端研究A', '人材育成B', '施設拡充C', '文化振興D', '国際交流E'],
+                        data: [450, 380, 320, 250, 150]
+                    }
+                }
+            }
+        };
+
+        let currentView = 'monthly';
+        let charts = {};
+        const dashboardContent = document.getElementById('dashboard-content');
+        const monthlyTab = document.getElementById('monthly-tab');
+        const annualTab = document.getElementById('annual-tab');
+
+        const CHART_COLORS = {
+            backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#8b5cf6', '#ec4899', '#64748b'],
+            borderColor: '#ffffff',
+            area: [
+                { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgba(59, 130, 246, 1)' },
+                { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 1)' },
+                { bg: 'rgba(249, 115, 22, 0.2)', border: 'rgba(249, 115, 22, 1)' },
+                { bg: 'rgba(139, 92, 246, 0.2)', border: 'rgba(139, 92, 246, 1)' },
+                { bg: 'rgba(236, 72, 153, 0.2)', border: 'rgba(236, 72, 153, 1)' },
+                { bg: 'rgba(100, 116, 139, 0.2)', border: 'rgba(100, 116, 139, 1)' },
+            ]
+        };
+        
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 12 },
+                    padding: 10,
+                    cornerRadius: 4,
+                    displayColors: true,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#e2e8f0' },
+                    ticks: {
+                       callback: function(value) {
+                          if (currentView === 'monthly') return value + '百万円';
+                          return value + '百万円';
+                       }
+                    }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        };
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(value);
+        }
+
+        function renderDashboard(view) {
+            const data = MOCK_DATA[view];
+            const isMonthly = view === 'monthly';
+            const periodLabel = isMonthly ? '月' : '年';
+            const prevPeriodLabel = isMonthly ? '前月' : '前年';
+            const prev2PeriodLabel = isMonthly ? '前々月' : '前々年';
+
+            const change = (data.overall.lastMonthAmount / data.overall.prevMonthAmount - 1) * 100;
+            const changeColor = change >= 0 ? 'text-emerald-500' : 'text-red-500';
+            const changeIcon = change >= 0 ? '▲' : '▼';
+
+            dashboardContent.innerHTML = `
+                <section id="section-overall" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">全体概要</h2>
+                    <p class="mb-6 text-slate-600">寄付金の全体的なパフォーマンスとトレンドを示します。主要なKPIを一目で確認できます。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h3 class="text-sm font-medium text-slate-500">前${periodLabel}の額</h3>
+                            <p class="text-3xl font-bold mt-2 text-slate-800">${formatCurrency(data.overall.lastMonthAmount)}</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h3 class="text-sm font-medium text-slate-500">${prev2PeriodLabel}額比</h3>
+                            <p class="text-3xl font-bold mt-2 text-slate-800 flex items-center">
+                                ${formatCurrency(data.overall.prevMonthAmount)}
+                                <span class="text-lg font-semibold ml-3 ${changeColor}">${changeIcon} ${change.toFixed(1)}%</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="text-lg font-semibold mb-1 text-slate-800">${periodLabel}次推移・${periodLabel}次累積推移</h3>
+                        <p class="text-sm text-slate-500 mb-4">棒グラフは各${periodLabel}の実績、折れ線グラフは累積額を示します。</p>
+                        <div class="chart-container"><canvas id="overall-trends-chart"></canvas></div>
+                    </div>
+                </section>
+
+                <section id="section-department" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">部局ごと</h2>
+                    <p class="mb-6 text-slate-600">各部局からの寄付状況を分析します。貢献度の高い部局や、その活動内容を把握できます。</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-1">
+                            <h3 class="text-lg font-semibold mb-1 text-slate-800">前${periodLabel}内訳</h3>
+                            <p class="text-sm text-slate-500 mb-4">どの部局が最も貢献しているかを示します。</p>
+                            <div class="chart-container"><canvas id="department-breakdown-chart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
+                             <h3 class="text-lg font-semibold mb-1 text-slate-800">内訳${periodLabel}次推移</h3>
+                             <p class="text-sm text-slate-500 mb-4">部局ごとの寄付額の推移と全体への貢献度の変化を示します。</p>
+                            <div class="chart-container"><canvas id="department-trends-chart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-3">
+                             <h3 class="text-lg font-semibold mb-1 text-slate-800">累積寄付額ランキング</h3>
+                             <p class="text-sm text-slate-500 mb-4">部局ごとの累積寄付額と、その内訳であるプロジェクト別の貢献度を示します。</p>
+                            <div class="chart-container"><canvas id="department-ranking-chart"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="section-region" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">地域ごと</h2>
+                    <p class="mb-6 text-slate-600">どの地域から多くの寄付が寄せられているかを分析します。地理的な強みや機会を特定できます。</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-1">
+                            <h3 class="text-lg font-semibold mb-1 text-slate-800">前${periodLabel}内訳</h3>
+                            <p class="text-sm text-slate-500 mb-4">寄付者の地理的な分布を示します。</p>
+                            <div class="chart-container"><canvas id="region-breakdown-chart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
+                            <h3 class="text-lg font-semibold mb-1 text-slate-800">内訳${periodLabel}次推移</h3>
+                            <p class="text-sm text-slate-500 mb-4">地域ごとの寄付額の推移とトレンドを示します。</p>
+                            <div class="chart-container"><canvas id="region-trends-chart"></canvas></div>
+                        </div>
+                         <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-3">
+                             <h3 class="text-lg font-semibold mb-1 text-slate-800">累積寄付額ランキング</h3>
+                             <p class="text-sm text-slate-500 mb-4">地域ごとの累積寄付額と、その内訳であるプロジェクト別の貢献度を示します。</p>
+                            <div class="chart-container"><canvas id="region-ranking-chart"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="section-project" class="scroll-mt-24">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">プロジェクトごと</h2>
+                    <p class="mb-6 text-slate-600">個別のプロジェクトの資金調達状況を分析します。寄付者の関心が高いプロジェクトを特定できます。</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-1">
+                            <h3 class="text-lg font-semibold mb-1 text-slate-800">前${periodLabel}内訳</h3>
+                            <p class="text-sm text-slate-500 mb-4">どのプロジェクトが最も寄付を集めたかを示します。</p>
+                            <div class="chart-container"><canvas id="project-breakdown-chart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
+                            <h3 class="text-lg font-semibold mb-1 text-slate-800">内訳${periodLabel}次推移</h3>
+                             <p class="text-sm text-slate-500 mb-4">プロジェクトごとの寄付額推移を示します。</p>
+                            <div class="chart-container"><canvas id="project-trends-chart"></canvas></div>
+                        </div>
+                         <div class="bg-white p-6 rounded-xl shadow-sm lg:col-span-3">
+                             <h3 class="text-lg font-semibold mb-1 text-slate-800">累積寄付額ランキング</h3>
+                             <p class="text-sm text-slate-500 mb-4">どのプロジェクトが最も累積寄付額を多く集めているかを示します。</p>
+                            <div class="chart-container"><canvas id="project-ranking-chart"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            destroyCharts();
+            createCharts(view);
+        }
+
+        function createCharts(view) {
+            const data = MOCK_DATA[view];
+            const isMonthly = view === 'monthly';
+
+            charts.overallTrends = new Chart(document.getElementById('overall-trends-chart'), {
+                type: 'bar',
+                data: {
+                    labels: data.overall.trends.labels,
+                    datasets: [
+                        {
+                            label: isMonthly ? '月次寄付額 (百万円)' : '年次寄付額 (百万円)',
+                            data: data.overall.trends.monthly,
+                            backgroundColor: '#3b82f6',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: isMonthly ? '累積寄付額 (百万円)' : '前年比成長率 (%)',
+                            data: isMonthly ? data.overall.trends.cumulative : data.overall.trends.growth,
+                            type: 'line',
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: { ...chartOptions, scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '寄付額（百万円）' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: {display: true, text: isMonthly ? '累積額（百万円）' : '成長率（%）' } }
+                } }
+            });
+            
+            charts.departmentBreakdown = new Chart(document.getElementById('department-breakdown-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.department.breakdown.labels,
+                    datasets: [{ data: data.department.breakdown.data, backgroundColor: CHART_COLORS.backgroundColor, borderColor: CHART_COLORS.borderColor, borderWidth: 2 }]
+                },
+                options: {...chartOptions, plugins: {...chartOptions.plugins, legend: {position: 'right'}}}
+            });
+            
+            charts.departmentTrends = new Chart(document.getElementById('department-trends-chart'), {
+                type: 'line',
+                data: {
+                    labels: data.department.trends.labels,
+                    datasets: data.department.trends.datasets.map((d, i) => ({
+                        ...d,
+                        fill: true,
+                        backgroundColor: CHART_COLORS.area[i].bg,
+                        borderColor: CHART_COLORS.area[i].border,
+                        tension: 0.3
+                    }))
+                },
+                options: {...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, stacked: true}}}
+            });
+
+            charts.departmentRanking = new Chart(document.getElementById('department-ranking-chart'), {
+                type: 'bar',
+                data: {
+                    labels: data.department.ranking.labels,
+                    datasets: data.department.ranking.datasets.map((d, i) => ({...d, backgroundColor: CHART_COLORS.backgroundColor[i]}))
+                },
+                options: {...chartOptions, indexAxis: 'y', scales: {...chartOptions.scales, x: {stacked: true}, y: {stacked: true}}}
+            });
+
+            charts.regionBreakdown = new Chart(document.getElementById('region-breakdown-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.region.breakdown.labels,
+                    datasets: [{ data: data.region.breakdown.data, backgroundColor: CHART_COLORS.backgroundColor, borderColor: CHART_COLORS.borderColor, borderWidth: 2 }]
+                },
+                 options: {...chartOptions, plugins: {...chartOptions.plugins, legend: {position: 'right'}}}
+            });
+
+            charts.regionTrends = new Chart(document.getElementById('region-trends-chart'), {
+                type: 'line',
+                data: {
+                    labels: data.region.trends.labels,
+                    datasets: data.region.trends.datasets.map((d, i) => ({
+                        ...d,
+                        fill: true,
+                        backgroundColor: CHART_COLORS.area[i].bg,
+                        borderColor: CHART_COLORS.area[i].border,
+                        tension: 0.3
+                    }))
+                },
+                options: {...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, stacked: true}}}
+            });
+
+            charts.regionRanking = new Chart(document.getElementById('region-ranking-chart'), {
+                type: 'bar',
+                data: {
+                    labels: data.region.ranking.labels,
+                    datasets: data.region.ranking.datasets.map((d, i) => ({...d, backgroundColor: CHART_COLORS.backgroundColor[i]}))
+                },
+                options: {...chartOptions, indexAxis: 'y', scales: {...chartOptions.scales, x: {stacked: true}, y: {stacked: true}}}
+            });
+
+            charts.projectBreakdown = new Chart(document.getElementById('project-breakdown-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.project.breakdown.labels,
+                    datasets: [{ data: data.project.breakdown.data, backgroundColor: CHART_COLORS.backgroundColor, borderColor: CHART_COLORS.borderColor, borderWidth: 2 }]
+                },
+                 options: {...chartOptions, plugins: {...chartOptions.plugins, legend: {position: 'right'}}}
+            });
+
+            charts.projectTrends = new Chart(document.getElementById('project-trends-chart'), {
+                type: 'line',
+                data: {
+                    labels: data.project.trends.labels,
+                    datasets: data.project.trends.datasets.map((d, i) => ({
+                        ...d,
+                        fill: true,
+                        backgroundColor: CHART_COLORS.area[i].bg,
+                        borderColor: CHART_COLORS.area[i].border,
+                        tension: 0.3
+                    }))
+                },
+                options: {...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, stacked: true}}}
+            });
+
+            charts.projectRanking = new Chart(document.getElementById('project-ranking-chart'), {
+                type: 'bar',
+                data: {
+                    labels: data.project.ranking.labels,
+                    datasets: [{ label: '累積寄付額 (百万円)', data: data.project.ranking.data, backgroundColor: '#3b82f6' }]
+                },
+                options: {...chartOptions, indexAxis: 'y', plugins: {...chartOptions.plugins, legend: {display: false}}}
+            });
+        }
+        
+        function destroyCharts() {
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+        }
+
+        function switchView(view) {
+            currentView = view;
+            if (view === 'monthly') {
+                monthlyTab.classList.add('active');
+                annualTab.classList.remove('active');
+            } else {
+                annualTab.classList.add('active');
+                monthlyTab.classList.remove('active');
+            }
+            renderDashboard(view);
+        }
+
+        function setupEventListeners() {
+            monthlyTab.addEventListener('click', () => switchView('monthly'));
+            annualTab.addEventListener('click', () => switchView('annual'));
+            
+            const subNavLinks = document.querySelectorAll('#sub-nav a');
+            const sections = document.querySelectorAll('main section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        subNavLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').slice(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px", threshold: 0 });
+
+            sections.forEach(section => observer.observe(section));
+
+             subNavLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelector(link.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchView('monthly');
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
